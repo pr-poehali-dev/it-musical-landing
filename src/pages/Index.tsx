@@ -1,22 +1,30 @@
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Index = () => {
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+
   useEffect(() => {
     const script = document.createElement('script');
     script.type = 'text/javascript';
     script.src = 'https://auth.robokassa.ru/Merchant/PaymentForm/FormFLS.js?EncodedInvoiceId=J6SPl83qJEegrzDbfuGPxg&DefaultSum=18000';
-    script.async = true;
+    script.async = false;
     
-    const container = document.getElementById('robokassa-widget');
-    if (container) {
-      container.appendChild(script);
-    }
+    script.onload = () => {
+      console.log('Robokassa script loaded');
+      setScriptLoaded(true);
+    };
+    
+    script.onerror = (error) => {
+      console.error('Robokassa script error:', error);
+    };
+    
+    document.body.appendChild(script);
     
     return () => {
-      if (container && script.parentNode === container) {
-        container.removeChild(script);
+      if (script.parentNode) {
+        document.body.removeChild(script);
       }
     };
   }, []);
@@ -109,11 +117,14 @@ const Index = () => {
             <p className="text-muted-foreground">Инвестируйте в свое творческое развитие</p>
           </div>
           
-          <div id="robokassa-widget" className="min-h-[400px] flex items-center justify-center">
-            <div className="text-center">
-              <Icon name="Loader2" size={40} className="animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Загрузка формы оплаты...</p>
-            </div>
+          <div className="min-h-[400px]">
+            <div id="robokassa-widget" />
+            {!scriptLoaded && (
+              <div className="text-center py-12">
+                <Icon name="Loader2" size={40} className="animate-spin text-primary mx-auto mb-4" />
+                <p className="text-muted-foreground">Загрузка формы оплаты...</p>
+              </div>
+            )}
           </div>
         </Card>
 
